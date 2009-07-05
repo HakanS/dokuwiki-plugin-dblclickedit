@@ -39,11 +39,37 @@ class action_plugin_dblclickedit extends DokuWiki_Action_Plugin {
     }
 
     function handle_content_display(& $event, $param) {
-        global $ACT;
-        if ($ACT!='show') return;
+        global $ID;
+        global $INFO;
+
+        function html_sectionedit($matches){
+            global $ID;
+
+            $editlink = ' ondblclick="window.location=\''.wl($ID,'do=edit&lines='.$matches[5]).'\'"';
+            $section = $matches[3];
+            if (preg_match('/<h\d>/', $section)) { // multiple headlines/divs in section
+                $section = preg_replace('/(<h\d)(>.*?<\/h\d>)/', "$1$editlink$2", $section);
+                $section = preg_replace('/(<div class="level\d")(>.*?<\/div>)/s', "$1$editlink$2", $section);
+            }
+            $section  = $matches[1]. $editlink .$matches[2]. $editlink .$section;
+            return $section;
+        }
+
+        if (!$INFO['writable'] || $INFO['rev']) return;
 
         $html = &$event->data;
-        $html = preg_replace('/(\<(?:div class="level\d"|pre class="code[^"]*"|h\d))(\>)/', '$1 ondblclick="openSectionEdit(\'\')"$2', $html);
+        if (preg_match('/<!-- SECTION/', $html, $matches)) {
+            // section info available -> section edit
+            $html = preg_replace_callback('/(<h\d)(>.*?<div class="level\d")(>.*?<\/div>.*?)<!-- SECTION\w* "(.*?)" \[(\d+-\d*)\] -->/s', 'html_sectionedit', $html);
+
+        } elseif (!preg_match('/<div/', $html)) {
+            // no header/section in page -> add span with page edit
+            $html = '<span ondblclick="window.location=\''.wl($ID,'do=edit').'\'">'.$html.'</span>';
+
+        } else {
+            // insert page edit
+            $html = preg_replace('/(\<(?:div class="level\d"|pre class="code[^"]*"|h\d))(\>)/', '$1 ondblclick="window.location=\''.wl($ID,'do=edit').'\'"$2', $html);
+        }
         return;
     }
 
