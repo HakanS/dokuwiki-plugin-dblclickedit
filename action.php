@@ -3,7 +3,7 @@
  * DblClickEdit Plugin - enter edit mode with double click
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author     Håkan Sandell <hakan.sandell@home.se>
+ * @author     HÃ¥kan Sandell <hakan.sandell@home.se>
  */
 
 // must be run within Dokuwiki
@@ -14,8 +14,8 @@ class action_plugin_dblclickedit extends DokuWiki_Action_Plugin {
     /**
      * register the eventhandlers
      */
-    function register(& $controller) {
-        $controller->register_hook('DOKUWIKI_STARTED', 'AFTER', $this, 'enable_dblClick');
+    function register(Doku_Event_Handler $controller) {
+        $controller->register_hook('DOKUWIKI_STARTED', 'AFTER',  $this, 'enable_dblClick', array());
     }
 
     /**
